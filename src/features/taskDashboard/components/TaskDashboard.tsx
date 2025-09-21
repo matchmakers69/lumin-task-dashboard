@@ -1,17 +1,21 @@
-import { Spinner } from "@/components/ui";
+import { Modal, Spinner } from "@/components/ui";
 import type { Task } from "../types/task";
 import Tasks from "./Tasks";
 import TaskItem from "./TaskItem";
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Button, Container, Typography } from "@mui/material";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import ClearCacheButton from "./ClearCacheButton";
 import { useEffect } from "react";
 import { useTasks } from "../hooks";
 import { areDependenciesCompleted, getReadyToStartTasks } from "../utils/taskUtils";
 import ReadyTasks from "./ReadyTasks";
+import { useFeatureSwitcher } from "@/hooks";
+import AddTaskForm from "./AddTaskForm";
 import TaskSnackbar from "./TaskSnackbar";
 
 const TaskDashboard = () => {
 	const { tasksResult, setCachedTasks, setTasksResult, snackbar, setSnackbar } = useTasks();
+	const modalFeature = useFeatureSwitcher();
 
 	const clearCacheAndReload = (): void => {
 		setCachedTasks(null);
@@ -74,6 +78,33 @@ const TaskDashboard = () => {
 		setTasksResult({ is: "ok", tasks: updatedTasks });
 	};
 
+	// Logic for adding new task
+	const handleAddTask = (name: string, deps: string[]): void => {
+		if (tasksResult.is !== "ok") return;
+
+		const trimmedName = name.trim();
+		if (!trimmedName) {
+			setSnackbar({ open: true, message: "Task name cannot be empty", severity: "error" });
+			return;
+		}
+
+		if (tasks.some((t) => t.name === trimmedName)) {
+			setSnackbar({ open: true, message: "Task with this name already exists", severity: "error" });
+			return;
+		}
+
+		const task: Task = {
+			name: trimmedName,
+			status: "PENDING",
+			dependencies: deps,
+		};
+		setTasksResult({ is: "ok", tasks: [...(tasksResult.tasks || []), task] });
+		setSnackbar({ open: true, message: "Task added successfully", severity: "success" });
+		setTimeout(() => {
+			modalFeature.off();
+		}, 1000);
+	};
+
 	const handleCloseSnackbar = (): void => {
 		setSnackbar((s) => ({ ...s, open: false }));
 	};
@@ -105,6 +136,17 @@ const TaskDashboard = () => {
 					<ClearCacheButton onClick={clearCacheAndReload}>Clear cache</ClearCacheButton>
 				</Box>
 				<ReadyTasks readyToStart={readyTasks} onAdvance={handleProgressTask} />
+				<Box sx={{ mb: 4, display: "flex", justifyContent: "flex-end" }}>
+					<Button
+						variant="contained"
+						endIcon={<AddOutlinedIcon />}
+						size="medium"
+						onClick={() => modalFeature.on()}
+						color="info"
+					>
+						Add new task
+					</Button>
+				</Box>
 				<Tasks>
 					{tasks.map((task) => {
 						const isReady = canAdvanceTask(task);
@@ -128,6 +170,11 @@ const TaskDashboard = () => {
 				severity={snackbar.severity}
 				onClose={handleCloseSnackbar}
 			/>
+			{modalFeature.isOn && (
+				<Modal title="Add new task" open={modalFeature.isOn} onClose={modalFeature.off}>
+					<AddTaskForm tasks={tasks} onAdd={handleAddTask} />
+				</Modal>
+			)}
 		</>
 	);
 };

@@ -5,3 +5,4 @@ export { default as ClearCacheButton } from "./ClearCacheButton";
 export { default as TaskStatusChip } from "./TaskStatusChip";
 export { default as TaskSnackbar } from "./TaskSnackbar";
 export { default as ReadyTasks } from "./ReadyTasks";
+export { default as AddTaskForm } from "./AddTaskForm";
