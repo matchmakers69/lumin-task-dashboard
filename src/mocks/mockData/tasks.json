@@ -1,0 +1,8 @@
+[
+	{ "name": "Fetch Data", "status": "PENDING", "dependencies": [] },
+	{ "name": "Validate Data", "status": "PENDING", "dependencies": ["Fetch Data"] },
+	{ "name": "Generate Report", "status": "PENDING", "dependencies": ["Validate Data"] },
+	{ "name": "Deploy Application", "status": "PENDING", "dependencies": ["Generate Report"] },
+	{ "name": "Setup Database", "status": "PENDING", "dependencies": [] },
+	{ "name": "Authentication", "status": "PENDING", "dependencies": ["Setup Database"] }
+]

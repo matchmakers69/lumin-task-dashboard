@@ -1,0 +1,3 @@
+export const isApiError = (error: unknown): error is Error => {
+	return typeof error === "object" && error !== null && "status" in error && "message" in error;
+};
